@@ -6,6 +6,16 @@ export const groupService = {
   getById: (id) => api.get(`/groups/${id}`),
   update: (id, data) => api.put(`/groups/${id}`, data),
   delete: (id) => api.delete(`/groups/${id}`),
-  addMember: (groupId, data) => api.post(`/groups/${groupId}/members`, data),
-  getMembers: (groupId) => api.get(`/groups/${groupId}/members`),
+
+  addMember: (groupId, data) =>
+    api.post(`/groups/${groupId}/members`, data),
+
+  getMembers: (groupId) =>
+    api.get(`/groups/${groupId}/members`),
+
+  leaveGroup: (groupId) =>
+    api.delete(`/groups/${groupId}/leave`),
+
+  removeMember: (groupId, memberId) =>
+    api.delete(`/groups/${groupId}/members/${memberId}`),
 };

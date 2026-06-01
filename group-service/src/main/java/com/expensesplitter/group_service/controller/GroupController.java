@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -96,6 +97,27 @@ public String deleteGroup(
     );
 
     return "Group deleted successfully";
+}
+
+@DeleteMapping("/{groupId}/leave")
+public ResponseEntity<String> leaveGroup(
+        @PathVariable Long groupId
+) {
+    return ResponseEntity.ok(
+            groupService.leaveGroup(groupId)
+    );
+}
+@DeleteMapping("/{groupId}/members/{memberId}")
+public ResponseEntity<String> removeMember(
+        @PathVariable Long groupId,
+        @PathVariable Long memberId
+) {
+    return ResponseEntity.ok(
+            groupService.removeMember(
+                    groupId,
+                    memberId
+            )
+    );
 }
 
 }

@@ -11,5 +11,9 @@ public interface ExpenseRepository
     List<Expense> findByGroupId(
             Long groupId
     );
+    boolean existsByGroupIdAndPaidBy(
+        Long groupId,
+        Long paidBy
+);
     
 }

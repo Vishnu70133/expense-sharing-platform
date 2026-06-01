@@ -1,5 +1,5 @@
 package com.expensesplitter.group_service.service;
-
+import com.expensesplitter.group_service.client.ExpenseServiceClient;
 import com.expensesplitter.group_service.client.UserServiceClient;
 import com.expensesplitter.group_service.dto.AddMemberRequest;
 import com.expensesplitter.group_service.dto.CreateGroupRequest;
@@ -11,6 +11,8 @@ import com.expensesplitter.group_service.entity.Group;
 import com.expensesplitter.group_service.entity.GroupMember;
 import com.expensesplitter.group_service.exception.GroupNotFoundException;
 import com.expensesplitter.group_service.exception.MemberAlreadyExistsException;
+import com.expensesplitter.group_service.exception.MemberHasExpenseHistoryException;
+import com.expensesplitter.group_service.exception.PendingBalanceException;
 import com.expensesplitter.group_service.repository.GroupMemberRepository;
 import com.expensesplitter.group_service.repository.GroupRepository;
 
@@ -29,6 +31,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserServiceClient userServiceClient;
+    private final ExpenseServiceClient expenseServiceClient;
 
     public GroupResponse createGroup(
             CreateGroupRequest request
@@ -317,5 +320,171 @@ public void deleteGroup(
 
     groupRepository
             .delete(group);
+}
+
+@Transactional
+public String leaveGroup(
+        Long groupId
+) {
+
+    Group group =
+            groupRepository.findById(groupId)
+                    .orElseThrow(() ->
+                            new GroupNotFoundException(
+                                    "Group not found"
+                            )
+                    );
+
+    String email =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getName();
+
+    UserProfileResponse profile =
+            userServiceClient
+                    .getProfileByEmail(email);
+
+    Long userId =
+            profile.getAuthUserId();
+
+    if (group.getCreatedBy().equals(userId)) {
+
+        throw new RuntimeException(
+                "Group owner cannot leave the group"
+        );
+    }
+
+    GroupMember member =
+            groupMemberRepository
+                    .findByGroupIdAndUserId(
+                            groupId,
+                            userId
+                    )
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Member not found"
+                            )
+                    );
+
+    Double balance =
+            expenseServiceClient
+                    .getMemberBalance(
+                            groupId,
+                            userId
+                    );
+
+    if (Math.abs(balance) > 0.01) {
+
+        throw new PendingBalanceException(
+                "Cannot leave group with pending balance."
+        );
+    }
+
+    boolean hasExpenses =
+            expenseServiceClient
+                    .hasExpenseHistory(
+                            groupId,
+                            userId
+                    );
+
+    if (hasExpenses) {
+
+        throw new MemberHasExpenseHistoryException(
+                "Cannot leave group because you have expense history."
+        );
+    }
+
+    groupMemberRepository.delete(member);
+
+    return "Left group successfully";
+}
+@Transactional
+public String removeMember(
+        Long groupId,
+        Long memberId
+) {
+
+    Group group =
+            groupRepository.findById(groupId)
+                    .orElseThrow(() ->
+                            new GroupNotFoundException(
+                                    "Group not found"
+                            )
+                    );
+
+    String email =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getName();
+
+    UserProfileResponse profile =
+            userServiceClient
+                    .getProfileByEmail(email);
+
+    Long currentUserId =
+            profile.getAuthUserId();
+
+    if (!group.getCreatedBy()
+            .equals(currentUserId)) {
+
+        throw new RuntimeException(
+                "Only group owner can remove members"
+        );
+    }
+
+    if (memberId.equals(
+            group.getCreatedBy()
+    )) {
+
+        throw new RuntimeException(
+                "Owner cannot be removed"
+        );
+    }
+
+    GroupMember member =
+            groupMemberRepository
+                    .findByGroupIdAndUserId(
+                            groupId,
+                            memberId
+                    )
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Member not found"
+                            )
+                    );
+
+    Double balance =
+            expenseServiceClient
+                    .getMemberBalance(
+                            groupId,
+                            memberId
+                    );
+
+    if (Math.abs(balance) > 0.01) {
+
+        throw new PendingBalanceException(
+                "Member has pending balance. Settle expenses first."
+        );
+    }
+
+    boolean hasExpenses =
+            expenseServiceClient
+                    .hasExpenseHistory(
+                            groupId,
+                            memberId
+                    );
+
+    if (hasExpenses) {
+
+        throw new MemberHasExpenseHistoryException(
+                "Member has expense history and cannot be removed."
+        );
+    }
+
+    groupMemberRepository.delete(member);
+
+    return "Member removed successfully";
 }
 }

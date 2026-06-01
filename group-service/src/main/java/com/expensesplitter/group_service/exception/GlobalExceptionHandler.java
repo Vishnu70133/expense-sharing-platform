@@ -37,4 +37,33 @@ public Map<String, String> handleMemberExists(
             ex.getMessage()
     );
 }
+
+@ExceptionHandler(
+        PendingBalanceException.class
+)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public Map<String, String> handlePendingBalance(
+        PendingBalanceException ex
+) {
+
+    return Map.of(
+            "error",
+            ex.getMessage()
+    );
+}
+
+@ExceptionHandler(
+        MemberHasExpenseHistoryException.class
+)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public Map<String, String> handleExpenseHistory(
+        MemberHasExpenseHistoryException ex
+) {
+
+    return Map.of(
+            "error",
+            ex.getMessage()
+    );
+}
+
 }

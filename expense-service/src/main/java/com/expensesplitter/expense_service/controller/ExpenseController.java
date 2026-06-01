@@ -57,6 +57,35 @@ public List<BalanceResponse> getBalances(
             groupId
     );
 }
+
+@GetMapping(
+        "/groups/{groupId}/members/{userId}/balance"
+)
+public Double getMemberBalance(
+        @PathVariable Long groupId,
+        @PathVariable Long userId
+) {
+
+    return expenseService.getMemberBalance(
+            groupId,
+            userId
+    );
+}
+
+@GetMapping(
+        "/groups/{groupId}/members/{userId}/has-expenses"
+)
+public Boolean hasExpenseHistory(
+        @PathVariable Long groupId,
+        @PathVariable Long userId
+) {
+
+    return expenseService.hasExpenseHistory(
+            groupId,
+            userId
+    );
+}
+
 @GetMapping("/groups/{groupId}/settlements")
 public List<SettlementResponse> getSettlements(
         @PathVariable Long groupId
@@ -100,4 +129,5 @@ public String deleteExpense(
 
     return "Expense deleted successfully";
 }
+
 }

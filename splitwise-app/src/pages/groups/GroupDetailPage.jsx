@@ -10,6 +10,7 @@ import Spinner from "../../components/ui/Spinner";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import AddMemberModal from "../../components/groups/AddMemberModal";
 import ExpenseModal from "../../components/expenses/ExpenseModal";
+import { useAuth } from "../../context/AuthContext";
 
 const tabs = ["Expenses", "Balances", "Settlements", "Members"];
 
@@ -18,6 +19,8 @@ const formatCurrency = (n) => `₹${Math.abs(Number(n)).toLocaleString("en-IN", 
 const GroupDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  
   const [activeTab, setActiveTab] = useState("Expenses");
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
@@ -30,6 +33,14 @@ const GroupDetailPage = () => {
   const [editExpense, setEditExpense] = useState(null);
   const [deleteExpense, setDeleteExpense] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState(null);
+  const [removeLoading, setRemoveLoading] = useState(false);
+
+  
+  const isOwner =
+  profile &&
+  group &&
+  profile.authUserId === group.createdBy;
 
   const fetchAll = async () => {
     try {
@@ -72,6 +83,48 @@ const GroupDetailPage = () => {
     } catch { toast.error("Failed to delete expense."); }
     finally { setDeleteLoading(false); }
   };
+
+  const handleLeaveGroup = async () => {
+  try {
+    await groupService.leaveGroup(group.id);
+
+    toast.success("Left group successfully");
+
+    navigate("/groups");
+  } catch (err) {
+  toast.error(
+    err.response?.data?.error ||
+    err.response?.data?.message ||
+    "Failed to leave group"
+  );
+}
+};
+
+const handleRemoveMember = async () => {
+  setRemoveLoading(true);
+
+  try {
+    await groupService.removeMember(
+      group.id,
+      memberToRemove.authUserId
+    );
+
+    toast.success("Member removed successfully");
+
+    setMemberToRemove(null);
+
+    fetchAll();
+  } catch (err) {
+    console.log(err.response?.data);
+  toast.error(
+    err.response?.data?.error ||
+    err.response?.data?.message ||
+    "Failed to remove member"
+  );
+}finally {
+    setRemoveLoading(false);
+  }
+};
 
   if (loading) {
     return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>;
@@ -263,12 +316,45 @@ const GroupDetailPage = () => {
                     <p className="font-medium text-slate-200 truncate">{m.fullName || m.name || "Member"}</p>
                     <p className="text-xs text-slate-500">ID: {m.authUserId}</p>
                   </div>
-                  <span className="badge-blue">Member</span>
+                  <div className="flex items-center gap-2">
+                    {group?.createdBy === m.authUserId ? (
+                      <span className="badge-green">
+                        Owner
+                      </span>
+                    ) : (
+                      <>
+                        <span className="badge-blue">
+                          Member
+                        </span>
+
+                        {isOwner && (
+                          <button
+                            onClick={() => setMemberToRemove(m)}
+                            className="text-red-400 hover:text-red-300 text-xs"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
+                        </div>
+          )}
+
+          {!isOwner && (
+            <div className="p-4 border-t border-slate-700">
+              <button
+                onClick={handleLeaveGroup}
+                className="btn-secondary text-red-400"
+              >
+                Leave Group
+              </button>
             </div>
           )}
         </div>
+
       )}
 
       <AddMemberModal isOpen={showAddMember} onClose={() => setShowAddMember(false)} groupId={id}
@@ -285,6 +371,14 @@ const GroupDetailPage = () => {
         isOpen={!!deleteExpense} onClose={() => setDeleteExpense(null)} onConfirm={handleDeleteExpense}
         title="Delete Expense" message={`Delete "${deleteExpense?.description}"? This cannot be undone.`}
         loading={deleteLoading}
+      />
+      <ConfirmDialog
+        isOpen={!!memberToRemove}
+        onClose={() => setMemberToRemove(null)}
+        onConfirm={handleRemoveMember}
+        title="Remove Member"
+        message={`Remove ${memberToRemove?.fullName} from this group?`}
+        loading={removeLoading}
       />
     </div>
   );

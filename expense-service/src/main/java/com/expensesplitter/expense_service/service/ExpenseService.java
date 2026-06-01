@@ -203,6 +203,24 @@ public List<BalanceResponse> getBalances(
     return balances;
 }
 
+public Double getMemberBalance(
+        Long groupId,
+        Long userId
+) {
+
+    List<BalanceResponse> balances =
+            getBalances(groupId);
+
+    return balances.stream()
+            .filter(balance ->
+                    balance.getUserId()
+                            .equals(userId)
+            )
+            .findFirst()
+            .map(BalanceResponse::getBalance)
+            .orElse(0.0);
+}
+
 public List<SettlementResponse> getSettlements(
         Long groupId
 ) {
@@ -382,4 +400,17 @@ public void deleteExpense(
     expenseRepository
             .delete(expense);
 }
+
+public boolean hasExpenseHistory(
+        Long groupId,
+        Long userId
+) {
+
+    return expenseRepository
+            .existsByGroupIdAndPaidBy(
+                    groupId,
+                    userId
+            );
+}
+
 }
