@@ -77,9 +77,7 @@ Expense expense =
                 .amount(
                         request.getAmount()
                 )
-                .paidBy(
-                        userId
-                )
+                .paidBy(request.getPaidBy())
                 .createdAt(
                         LocalDateTime.now()
                 )
@@ -313,6 +311,7 @@ public ExpenseResponse updateExpense(
     expense.setAmount(
             request.getAmount()
     );
+    expense.setPaidBy(request.getPaidBy());
 
     Expense updatedExpense =
             expenseRepository.save(

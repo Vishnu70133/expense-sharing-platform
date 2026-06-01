@@ -14,4 +14,6 @@ public class UpdateExpenseRequest {
 
     @NotNull
     private Double amount;
+
+    private Long paidBy;
 }

@@ -17,4 +17,7 @@ public class CreateExpenseRequest {
 
     @NotNull
     private Double amount;
+
+    @NotNull
+    private Long paidBy;
 }

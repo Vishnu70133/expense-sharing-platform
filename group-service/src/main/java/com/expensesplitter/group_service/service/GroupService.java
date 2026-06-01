@@ -109,24 +109,44 @@ System.out.println(
 
 public List<GroupResponse> getMyGroups() {
 
-    Long userId = 1L;
+    String email =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getName();
+
+    System.out.println(
+            "Authenticated User: " + email
+    );
+
+    UserProfileResponse profile =
+            userServiceClient
+                    .getProfileByEmail(email);
+
+    Long userId =
+            profile.getAuthUserId();
+
+    System.out.println(
+            "Auth User ID: " + userId
+    );
 
     List<GroupMember> memberships =
-            groupMemberRepository.findByUserId(
-                    userId
-            );
+            groupMemberRepository
+                    .findByUserId(userId);
 
     return memberships.stream()
             .map(member -> {
 
                 Group group =
-                        groupRepository.findById(
-                                member.getGroupId()
-                        ).orElseThrow(() ->
-                                new GroupNotFoundException(
-                                        "Group not found"
+                        groupRepository
+                                .findById(
+                                        member.getGroupId()
                                 )
-                        );
+                                .orElseThrow(() ->
+                                        new GroupNotFoundException(
+                                                "Group not found"
+                                        )
+                                );
 
                 return new GroupResponse(
                         group.getId(),
