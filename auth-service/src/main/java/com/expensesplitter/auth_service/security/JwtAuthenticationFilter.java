@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        System.out.println("PATH = " + path);
+        
 
         // Public endpoints
         if (path.equals("/auth/login")
@@ -67,15 +67,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getContext()
                     .setAuthentication(authentication);
 
-            System.out.println(
-                    "Authenticated User: " + email
-            );
+            
 
         } catch (Exception ex) {
 
-            System.out.println(
-                    "Invalid JWT: " + ex.getMessage()
-            );
+            
         }
 
         filterChain.doFilter(

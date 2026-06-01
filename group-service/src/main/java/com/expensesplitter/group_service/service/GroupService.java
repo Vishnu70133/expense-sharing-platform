@@ -43,9 +43,7 @@ public class GroupService {
                         .getAuthentication()
                         .getName();
 
-        System.out.println(
-                "Creating group for: " + email
-        );
+        
 
         /*
          * Temporary solution:
@@ -59,9 +57,7 @@ public class GroupService {
 Long userId =
         profile.getAuthUserId();
 
-System.out.println(
-        "User ID: " + userId
-);
+
 
         Group group = Group.builder()
                 .name(request.getName())
@@ -118,9 +114,7 @@ public List<GroupResponse> getMyGroups() {
                     .getAuthentication()
                     .getName();
 
-    System.out.println(
-            "Authenticated User: " + email
-    );
+    
 
     UserProfileResponse profile =
             userServiceClient
@@ -129,9 +123,7 @@ public List<GroupResponse> getMyGroups() {
     Long userId =
             profile.getAuthUserId();
 
-    System.out.println(
-            "Auth User ID: " + userId
-    );
+    
 
     List<GroupMember> memberships =
             groupMemberRepository

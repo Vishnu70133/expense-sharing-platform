@@ -183,7 +183,7 @@ for (Expense expense : expenses) {
     );
 }
 
-/* ADD THIS BLOCK */
+
 List<Settlement> completedSettlements =
         settlementRepository.findByGroupId(
                 groupId
@@ -207,7 +207,7 @@ for (Settlement settlement : completedSettlements) {
             ) - settlement.getAmount()
     );
 }
-/* END */
+
 
 List<BalanceResponse> balances =
         new ArrayList<>();

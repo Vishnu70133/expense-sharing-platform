@@ -61,17 +61,11 @@ public class JwtAuthenticationFilter
                             authentication
                     );
 
-            System.out.println(
-                    "Authenticated User: "
-                            + email
-            );
+            
 
         } catch (Exception ex) {
 
-            System.out.println(
-                    "Invalid JWT: "
-                            + ex.getMessage()
-            );
+            
         }
 
         filterChain.doFilter(
