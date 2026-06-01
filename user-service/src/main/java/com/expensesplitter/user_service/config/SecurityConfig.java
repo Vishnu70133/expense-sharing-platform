@@ -21,16 +21,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
-        System.out.println("USER SECURITY CONFIG LOADED");
 
         http
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/profiles/email/**")
-        .permitAll()
-        .requestMatchers("/profiles/auth-user/**")
-        .permitAll()
+        
         .requestMatchers("/profiles")
         .permitAll()
         .requestMatchers(
@@ -53,7 +49,7 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class
                 )
 
-                .httpBasic(Customizer.withDefaults());
+                ;
 
         return http.build();
     }

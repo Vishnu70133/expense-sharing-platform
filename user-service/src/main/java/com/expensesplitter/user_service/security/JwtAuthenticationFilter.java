@@ -26,6 +26,10 @@ public class JwtAuthenticationFilter
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        System.out.println(
+        "Authorization Header = "
+        + request.getHeader("Authorization")
+);
 
         String authHeader =
                 request.getHeader("Authorization");
