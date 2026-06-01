@@ -349,20 +349,6 @@ The application uses:
 
 ---
 
-## Screenshots
-
-Add application screenshots here.
-
-Examples:
-
-* Login Page
-* Dashboard
-* Group Details
-* Expenses Tab
-* Balances Tab
-* Settlements Tab
-
----
 
 ## Learning Outcomes
 
