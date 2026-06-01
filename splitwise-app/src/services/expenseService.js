@@ -8,4 +8,6 @@ export const expenseService = {
   getById: (expenseId) => api.get(`/expenses/${expenseId}`),
   update: (expenseId, data) => api.put(`/expenses/${expenseId}`, data),
   delete: (expenseId) => api.delete(`/expenses/${expenseId}`),
+  recordSettlement: (data) =>
+    api.post("/expenses/settlements", data),
 };

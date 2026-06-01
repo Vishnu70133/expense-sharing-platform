@@ -2,6 +2,7 @@ package com.expensesplitter.expense_service.controller;
 
 import com.expensesplitter.expense_service.dto.BalanceResponse;
 import com.expensesplitter.expense_service.dto.CreateExpenseRequest;
+import com.expensesplitter.expense_service.dto.CreateSettlementRequest;
 import com.expensesplitter.expense_service.dto.ExpenseResponse;
 import com.expensesplitter.expense_service.dto.SettlementResponse;
 import com.expensesplitter.expense_service.dto.UpdateExpenseRequest;
@@ -129,5 +130,19 @@ public String deleteExpense(
 
     return "Expense deleted successfully";
 }
+
+@PostMapping("/settlements")
+public String createSettlement(
+        @RequestBody
+        CreateSettlementRequest request
+) {
+
+    expenseService.createSettlement(
+            request
+    );
+
+    return "Settlement recorded";
+}
+
 
 }

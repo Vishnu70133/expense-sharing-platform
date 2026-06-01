@@ -42,6 +42,11 @@ const GroupDetailPage = () => {
   group &&
   profile.authUserId === group.createdBy;
 
+  const totalExpenses = expenses.reduce(
+  (sum, expense) => sum + Number(expense.amount),
+  0
+);
+
   const fetchAll = async () => {
     try {
       const [grpRes, memRes, expRes, balRes, setRes] = await Promise.all([
@@ -57,13 +62,20 @@ const GroupDetailPage = () => {
       setBalances(balRes.data || []);
       setSettlements(setRes.data || []);
     } catch (err) {
-      toast.error("Failed to load group data.");
-    } finally {
+  console.error(err);
+  toast.error("Failed to load group data.");
+} finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchAll(); }, [id]);
+  useEffect(() => {
+  const loadData = async () => {
+    await fetchAll();
+  };
+
+  loadData();
+}, [id]);
 
   const getMemberName = (userId) => {
   const m = members.find(
@@ -99,7 +111,25 @@ const GroupDetailPage = () => {
   );
 }
 };
+const handleSettlement = async (s) => {
+  try {
+    await expenseService.recordSettlement({
+      groupId: Number(id),
+      fromUserId: s.fromUserId,
+      toUserId: s.toUserId,
+      amount: s.amount,
+    });
 
+    toast.success("Settlement recorded");
+
+    fetchAll();
+  } catch (err) {
+    toast.error(
+      err.response?.data?.error ||
+      "Failed to record settlement"
+    );
+  }
+};
 const handleRemoveMember = async () => {
   setRemoveLoading(true);
 
@@ -148,6 +178,36 @@ const handleRemoveMember = async () => {
           <button onClick={() => { setEditExpense(null); setShowExpenseModal(true); }} className="btn-primary text-sm flex items-center gap-2">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Expense</span>
           </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="card p-5">
+          <p className="text-sm text-slate-500">
+            Total Expenses
+          </p>
+          <p className="text-2xl font-bold text-brand-400 mt-1">
+            {formatCurrency(totalExpenses)}
+          </p>
+        </div>
+
+        <div className="card p-5">
+          <p className="text-sm text-slate-500">
+            Members
+          </p>
+          <p className="text-2xl font-bold text-slate-200 mt-1">
+            {members.length}
+          </p>
+        </div>
+
+        <div className="card p-5">
+          <p className="text-sm text-slate-500">
+            Expense Entries
+          </p>
+          <p className="text-2xl font-bold text-slate-200 mt-1">
+            {expenses.length}
+          </p>
         </div>
       </div>
 
@@ -280,6 +340,12 @@ const handleRemoveMember = async () => {
                     </div>
                     <div className="flex flex-col items-center gap-1 shrink-0 px-4">
                       <p className="font-bold text-brand-400 text-lg">{formatCurrency(s.amount)}</p>
+                      <button
+                        onClick={() => handleSettlement(s)}
+                        className="btn-primary text-xs mt-2"
+                      >
+                        Settled
+                      </button>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-px bg-slate-600" />
                         <ArrowRight className="w-3 h-3 text-slate-500" />

@@ -4,6 +4,7 @@ import com.expensesplitter.expense_service.client.GroupServiceClient;
 import com.expensesplitter.expense_service.client.UserServiceClient;
 import com.expensesplitter.expense_service.dto.BalanceResponse;
 import com.expensesplitter.expense_service.dto.CreateExpenseRequest;
+import com.expensesplitter.expense_service.dto.CreateSettlementRequest;
 import com.expensesplitter.expense_service.dto.ExpenseResponse;
 import com.expensesplitter.expense_service.dto.GroupMemberResponse;
 import com.expensesplitter.expense_service.dto.SettlementResponse;
@@ -11,9 +12,11 @@ import com.expensesplitter.expense_service.dto.UpdateExpenseRequest;
 import com.expensesplitter.expense_service.dto.UserProfileResponse;
 import com.expensesplitter.expense_service.entity.Expense;
 import com.expensesplitter.expense_service.entity.ExpenseSplit;
+import com.expensesplitter.expense_service.entity.Settlement;
 import com.expensesplitter.expense_service.exception.ResourceNotFoundException;
 import com.expensesplitter.expense_service.repository.ExpenseRepository;
 import com.expensesplitter.expense_service.repository.ExpenseSplitRepository;
+import com.expensesplitter.expense_service.repository.SettlementRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,8 @@ public class ExpenseService {
     private final GroupServiceClient groupServiceClient;
 
     private final UserServiceClient userServiceClient;
+
+    private final SettlementRepository settlementRepository;
 
     public ExpenseResponse createExpense(
             CreateExpenseRequest request
@@ -165,42 +170,68 @@ public List<BalanceResponse> getBalances(
             totalExpense / memberCount;
 
     Map<Long, Double> paidAmounts =
-            new HashMap<>();
+        new HashMap<>();
 
-    for (Expense expense : expenses) {
+for (Expense expense : expenses) {
 
-        paidAmounts.put(
-                expense.getPaidBy(),
-                paidAmounts.getOrDefault(
-                        expense.getPaidBy(),
-                        0.0
-                ) + expense.getAmount()
+    paidAmounts.put(
+            expense.getPaidBy(),
+            paidAmounts.getOrDefault(
+                    expense.getPaidBy(),
+                    0.0
+            ) + expense.getAmount()
+    );
+}
+
+/* ADD THIS BLOCK */
+List<Settlement> completedSettlements =
+        settlementRepository.findByGroupId(
+                groupId
         );
-    }
 
-    List<BalanceResponse> balances =
-            new ArrayList<>();
+for (Settlement settlement : completedSettlements) {
 
-    for (GroupMemberResponse member : members) {
+    paidAmounts.put(
+            settlement.getFromUserId(),
+            paidAmounts.getOrDefault(
+                    settlement.getFromUserId(),
+                    0.0
+            ) + settlement.getAmount()
+    );
 
-        double paid =
-                paidAmounts.getOrDefault(
-                        member.getAuthUserId(),
-                        0.0
-                );
+    paidAmounts.put(
+            settlement.getToUserId(),
+            paidAmounts.getOrDefault(
+                    settlement.getToUserId(),
+                    0.0
+            ) - settlement.getAmount()
+    );
+}
+/* END */
 
-        double balance =
-                paid - sharePerPerson;
+List<BalanceResponse> balances =
+        new ArrayList<>();
 
-        balances.add(
-                new BalanceResponse(
-                        member.getAuthUserId(),
-                        balance
-                )
-        );
-    }
+for (GroupMemberResponse member : members) {
 
-    return balances;
+    double paid =
+            paidAmounts.getOrDefault(
+                    member.getAuthUserId(),
+                    0.0
+            );
+
+    double balance =
+            paid - sharePerPerson;
+
+    balances.add(
+            new BalanceResponse(
+                    member.getAuthUserId(),
+                    balance
+            )
+    );
+}
+
+return balances;
 }
 
 public Double getMemberBalance(
@@ -411,6 +442,25 @@ public boolean hasExpenseHistory(
                     groupId,
                     userId
             );
+}
+
+@Transactional
+public void createSettlement(
+        CreateSettlementRequest request
+) {
+
+    Settlement settlement =
+            Settlement.builder()
+                    .groupId(request.getGroupId())
+                    .fromUserId(request.getFromUserId())
+                    .toUserId(request.getToUserId())
+                    .amount(request.getAmount())
+                    .settledAt(LocalDateTime.now())
+                    .build();
+
+    settlementRepository.save(
+            settlement
+    );
 }
 
 }
