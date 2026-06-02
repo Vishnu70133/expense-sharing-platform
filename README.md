@@ -1,11 +1,8 @@
-
-## Overview
-
-Expense Splitter is a Splitwise-inspired full-stack expense sharing application built using Spring Boot Microservices and React. Users can create groups, add members, track shared expenses, calculate balances, and record settlements. The application follows a microservices architecture with service discovery, API gateway routing, JWT authentication, and secure inter-service communication.
-
 # Expense Splitter
 
-Expense Splitter is a Splitwise-inspired expense sharing application built using Spring Boot Microservices and React. It helps users create groups, add members, track shared expenses, calculate balances, and manage settlements between group members.
+Expense Splitter is a Splitwise-inspired full-stack expense sharing application built using Spring Boot Microservices, React, MySQL, Docker, and Docker Compose.
+
+Users can create groups, add members, track shared expenses, calculate balances, and manage settlements. The application follows a microservices architecture with service discovery, API gateway routing, JWT authentication, and secure inter-service communication.
 
 ---
 
@@ -17,7 +14,7 @@ Expense Splitter is a Splitwise-inspired expense sharing application built using
 * User Login
 * JWT-based Authentication
 * Protected APIs using Spring Security
-* Secure service-to-service communication using JWT propagation
+* Secure Service-to-Service Communication using JWT Propagation
 
 ### User Management
 
@@ -65,13 +62,13 @@ Expense Splitter is a Splitwise-inspired expense sharing application built using
 
 ---
 
-## Microservices Architecture
+# Microservices Architecture
 
 The application follows a Microservices Architecture pattern.
 
-### Services
+## Services
 
-#### Auth Service
+### Auth Service
 
 Responsible for:
 
@@ -80,14 +77,14 @@ Responsible for:
 * JWT Generation
 * Authentication Validation
 
-#### User Service
+### User Service
 
 Responsible for:
 
 * User Profiles
 * User Information Management
 
-#### Group Service
+### Group Service
 
 Responsible for:
 
@@ -95,7 +92,7 @@ Responsible for:
 * Group Membership Management
 * Group Administration
 
-#### Expense Service
+### Expense Service
 
 Responsible for:
 
@@ -104,14 +101,14 @@ Responsible for:
 * Settlement Calculation
 * Settlement Recording
 
-#### API Gateway
+### API Gateway
 
 Responsible for:
 
 * Routing Requests
 * Centralized API Access
 
-#### Eureka Server
+### Eureka Server
 
 Responsible for:
 
@@ -120,37 +117,28 @@ Responsible for:
 
 ---
 
-## System Architecture
+# System Architecture
 
-Frontend (React)
-
-↓
-
+```text
+Browser
+   ↓
+React Frontend
+   ↓
 API Gateway
-
-↓
-
+   ↓
 Auth Service
-
 User Service
-
 Group Service
-
 Expense Service
-
-↓
-
-MySQL Database
-
-↓
-
-Eureka Discovery Server
+   ↓
+MySQL
+```
 
 ---
 
-## Tech Stack
+# Tech Stack
 
-### Backend
+## Backend
 
 * Java 21
 * Spring Boot
@@ -164,51 +152,50 @@ Eureka Discovery Server
 * MySQL
 * Maven
 
-### Frontend
+## Frontend
 
 * React
+* Vite
 * React Router
 * Axios
 * Tailwind CSS
 * React Hot Toast
 
+## DevOps
+
+* Docker
+* Docker Compose
+
 ---
 
-## Project Structure
+# Project Structure
 
+```text
 expense-sharing-platform/
 
 ├── auth-service
-
 ├── user-service
-
 ├── group-service
-
 ├── expense-service
-
 ├── api-gateway
-
 ├── eureka-server
-
-├── frontend
-
+├── splitwise-app
+├── docker-compose.yml
 └── README.md
+```
 
 ---
 
-## How to Run
+# Running the Application with Docker
 
-### Prerequisites
+## Prerequisites
 
-* Java 21+
-* Maven
-* Node.js
-* MySQL
+* Docker Desktop
 * Git
 
 ---
 
-### Clone Repository
+## Clone Repository
 
 ```bash
 git clone https://github.com/Vishnu70133/expense-sharing-platform.git
@@ -218,99 +205,100 @@ cd expense-sharing-platform
 
 ---
 
-### Configure Database
+## Configure Environment Variables
 
-Create a MySQL database and update application.properties files with your database credentials.
+Create a `.env` file in the project root:
 
----
+```env
+MYSQL_USERNAME=root
+MYSQL_PASSWORD=your_password
 
-### Start Eureka Server
+JWT_SECRET=your_jwt_secret
 
-```bash
-cd eureka-server
+AUTH_DB_URL=jdbc:mysql://mysql:3306/auth_db
+USER_DB_URL=jdbc:mysql://mysql:3306/user_db
+GROUP_DB_URL=jdbc:mysql://mysql:3306/group_db
+EXPENSE_DB_URL=jdbc:mysql://mysql:3306/expense_db
 
-mvn spring-boot:run
-```
-
-Runs on:
-
-```text
-http://localhost:8761
-```
-
----
-
-### Start API Gateway
-
-```bash
-cd api-gateway
-
-mvn spring-boot:run
-```
-
-Runs on:
-
-```text
-http://localhost:8080
+EUREKA_URL=http://eureka-server:8761/eureka
 ```
 
 ---
 
-### Start Backend Services
-
-Auth Service
+## Start the Entire Application
 
 ```bash
-cd auth-service
-
-mvn spring-boot:run
-```
-
-User Service
-
-```bash
-cd user-service
-
-mvn spring-boot:run
-```
-
-Group Service
-
-```bash
-cd group-service
-
-mvn spring-boot:run
-```
-
-Expense Service
-
-```bash
-cd expense-service
-
-mvn spring-boot:run
+docker compose up -d --build
 ```
 
 ---
 
-### Start Frontend
+## Verify Running Containers
 
 ```bash
-cd frontend
-
-npm install
-
-npm run dev
+docker ps
 ```
 
-Runs on:
+Expected Containers:
 
-```text
-http://localhost:5173
+* mysql
+* eureka-server
+* auth-service
+* user-service
+* group-service
+* expense-service
+* api-gateway
+* splitwise-app
+
+---
+
+# Access URLs
+
+| Service          | URL                   |
+| ---------------- | --------------------- |
+| Frontend         | http://localhost:5173 |
+| API Gateway      | http://localhost:8080 |
+| Eureka Dashboard | http://localhost:8761 |
+
+---
+
+# API Examples
+
+## Login
+
+```http
+POST http://localhost:8080/auth/login
+```
+
+Request:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "jwt-token"
+}
 ```
 
 ---
 
-## Security
+## Get My Groups
+
+```http
+GET http://localhost:8080/groups/my-groups
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# Security
 
 The application uses:
 
@@ -322,7 +310,20 @@ The application uses:
 
 ---
 
-## Current Features Implemented
+# Dockerized Services
+
+* React Frontend
+* API Gateway
+* Auth Service
+* User Service
+* Group Service
+* Expense Service
+* Eureka Server
+* MySQL Database
+
+---
+
+# Current Features Implemented
 
 * Authentication
 * User Profiles
@@ -337,7 +338,7 @@ The application uses:
 
 ---
 
-## Future Enhancements
+# Future Enhancements
 
 * Settlement History
 * Real-Time Updates using WebSockets
@@ -346,11 +347,12 @@ The application uses:
 * Activity Timeline
 * Group Analytics
 * Mobile Application
+* CI/CD Pipeline
+* Kubernetes Deployment
 
 ---
 
-
-## Learning Outcomes
+# Learning Outcomes
 
 This project demonstrates:
 
@@ -362,12 +364,13 @@ This project demonstrates:
 * REST API Design
 * Database Design
 * React Frontend Development
+* Docker & Docker Compose
 * Full Stack Application Development
 
 ---
 
-## Author
+# Author
 
-Vishnu Dasari
+**Vishnu Dasari**
 
 GitHub: https://github.com/Vishnu70133
