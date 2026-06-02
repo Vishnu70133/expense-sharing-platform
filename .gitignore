@@ -16,3 +16,6 @@ target/
 
 # Environment files
 .env
+
+*.sql
+mysql-init/

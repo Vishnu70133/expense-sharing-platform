@@ -1,6 +1,15 @@
 services:
 
-  
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   eureka-server:
     build: ./eureka-server
@@ -20,7 +29,7 @@ services:
       AUTH_DB_URL: ${AUTH_DB_URL}
       EUREKA_URL: ${EUREKA_URL}
     depends_on:
-      
+      - mysql
       - eureka-server
 
   user-service:
@@ -35,7 +44,7 @@ services:
       USER_DB_URL: ${USER_DB_URL}
       EUREKA_URL: ${EUREKA_URL}
     depends_on:
-      
+      - mysql
       - eureka-server
 
   group-service:
@@ -50,7 +59,7 @@ services:
       GROUP_DB_URL: ${GROUP_DB_URL}
       EUREKA_URL: ${EUREKA_URL}
     depends_on:
-      
+      - mysql
       - eureka-server
 
   expense-service:
@@ -65,7 +74,7 @@ services:
       EXPENSE_DB_URL: ${EXPENSE_DB_URL}
       EUREKA_URL: ${EUREKA_URL}
     depends_on:
-      
+      - mysql
       - eureka-server
 
   api-gateway:
@@ -77,3 +86,7 @@ services:
       EUREKA_URL: ${EUREKA_URL}
     depends_on:
       - eureka-server
+
+
+volumes:
+  mysql_data:
